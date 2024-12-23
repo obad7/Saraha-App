@@ -21,3 +21,22 @@ export const register = async (req, res) => {
         res.status(500).json({ success: false, error: error.message, stack: error.stack });
     }
 };
+
+
+export const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        const user = await userModel.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User does not exist" });
+        }
+
+        res.status(201).json({ message: "DONE", user });
+
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message, stack: error.stack });
+    }
+};
+
+
