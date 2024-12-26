@@ -58,11 +58,6 @@ export const login = async (req, res) => {
             { expiresIn: "1d" }
         );
 
-        // decrypt phone number
-        // user.phone = CryptoJS.AES.decrypt(
-        // user.phone, 
-        // process.env.ENCRYPTION_KEY).toString(CryptoJS.enc.Utf8);
-
         res.status(201).json({ message: "DONE", token });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message, stack: error.stack });
