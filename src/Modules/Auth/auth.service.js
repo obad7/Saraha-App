@@ -1,6 +1,7 @@
 import userModel from "../../DB/Models/user.model.js";
 import Bcrypt from "bcrypt";
 import CryptoJS from "crypto-js";
+import jwt from "jsonwebtoken";
 
 export const register = async (req, res) => {
     try {
@@ -50,10 +51,19 @@ export const login = async (req, res) => {
             return res.status(401).json({ success: false, message: "Invalid password" });
         }
 
-        // decrypt phone number
-        user.phone = CryptoJS.AES.decrypt(user.phone, process.env.ENCRYPTION_KEY).toString(CryptoJS.enc.Utf8);
+        // create token
+        const token = jwt.sign(
+            { id: user._id, isLoggedIn: true }, 
+            process.env.JWT_SECRET_USER,
+            { expiresIn: "1d" }
+        );
 
-        res.status(201).json({ message: "DONE", user });
+        // decrypt phone number
+        // user.phone = CryptoJS.AES.decrypt(
+        // user.phone, 
+        // process.env.ENCRYPTION_KEY).toString(CryptoJS.enc.Utf8);
+
+        res.status(201).json({ message: "DONE", token });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message, stack: error.stack });
     }
