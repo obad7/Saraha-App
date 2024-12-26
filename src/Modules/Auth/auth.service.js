@@ -1,4 +1,5 @@
 import userModel from "../../DB/Models/user.model.js";
+import bcrypt from "bcrypt";
 
 export const register = async (req, res) => {
     try {
@@ -12,8 +13,15 @@ export const register = async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ success: false, message: "This email already exists" });
         }
+        
+        // hash password
+        const hashPassword = bcrypt.hashSync(password, 10);
 
-        const user = await userModel.create({ userName, email, password });
+        const user = await userModel.create({ 
+            userName, 
+            email, 
+            password : hashPassword 
+        });
 
         res.status(201).json({ message: "User registered successfully", user });
 
@@ -32,8 +40,12 @@ export const login = async (req, res) => {
             return res.status(404).json({ success: false, message: "User does not exist" });
         }
 
-        res.status(201).json({ message: "DONE", user });
+        const match = bcrypt.compareSync(password, user.password);
+        if (!match) {
+            return res.status(401).json({ success: false, message: "Invalid password" });
+        }
 
+        res.status(201).json({ message: "DONE", user });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message, stack: error.stack });
     }
