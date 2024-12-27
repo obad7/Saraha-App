@@ -6,6 +6,7 @@ export const rolesType = {
     Admin : "Admin"
 }
 
+// Auth Middleware
 export const authentication = async (req, res, next) => {
     try {
         // get token from headers
@@ -49,3 +50,17 @@ export const authentication = async (req, res, next) => {
         return res.status(500).json({ success: false, error: error.message, stack: error.stack });
     }
 };
+
+// check user role - Authorization Middleware
+export const allowTo = (roles = []) => {
+    return async (req, res, next) => {
+        try {
+            if (!roles.includes(req.user.role)) {
+                return res.status(403).json({ success: false, message: "Forbidden Account" });
+            }
+            return next();
+        } catch (error) {
+            return res.status(500).json({ success: false, error: error.message, stack: error.stack });
+        }
+    }
+}
