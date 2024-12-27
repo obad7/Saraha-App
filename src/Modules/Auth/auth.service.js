@@ -2,10 +2,11 @@ import userModel from "../../DB/Models/user.model.js";
 import Bcrypt from "bcrypt";
 import CryptoJS from "crypto-js";
 import jwt from "jsonwebtoken";
+import { rolesType } from "../../Middlewares/auth.middleware.js";
 
 export const register = async (req, res) => {
     try {
-        const { userName, email, password, confirmPassword, phone } = req.body;
+        const { userName, email, password, confirmPassword, phone, role } = req.body;
 
         if (password !== confirmPassword) {
             return res.status(400).json({ success: false, message: "Passwords do not match" });
@@ -27,6 +28,7 @@ export const register = async (req, res) => {
             email, 
             password : hashPassword,
             phone : encryptPhone,
+            role,
         });
 
         res.status(201).json({ message: "User registered successfully", user });
@@ -54,8 +56,12 @@ export const login = async (req, res) => {
         // create token
         const token = jwt.sign(
             { id: user._id, isLoggedIn: true }, 
-            process.env.JWT_SECRET_USER,
-            { expiresIn: "1d" }
+            user.role === rolesType.User 
+                ? process.env.JWT_SECRET_USER 
+                : process.env.JWT_SECRET_ADMIN,
+            { 
+                expiresIn: "1d"
+            }
         );
 
         res.status(201).json({ message: "DONE", token });

@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { rolesType } from "../../Middlewares/auth.middleware.js";
 
 const userSchema = new Schema(
     {
@@ -19,7 +20,7 @@ const userSchema = new Schema(
             match: [
                 /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/
             ]
-        }, 
+        },
 
         password: {
             type: String,
@@ -41,11 +42,8 @@ const userSchema = new Schema(
 
         role: {
             type: String,
-            enum: {
-                values: ["user", "admin"],
-                message: "Role must be either 'user' or 'admin'"
-            },
-            default: "user"
+            enum: Object.values(rolesType),
+            default: rolesType.User
         },
 
         DOB: String,

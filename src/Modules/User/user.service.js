@@ -9,7 +9,7 @@ export const getUserProfile = async (req, res) => {
 
         // decrypt phone number
         user.phone = CryptoJS.AES.decrypt(
-            user.phone, 
+            user.phone,
             process.env.ENCRYPTION_KEY
         ).toString(CryptoJS.enc.Utf8);
 
