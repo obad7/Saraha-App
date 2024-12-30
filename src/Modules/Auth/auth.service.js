@@ -3,6 +3,8 @@ import Bcrypt from "bcrypt";
 import CryptoJS from "crypto-js";
 import jwt from "jsonwebtoken";
 import { rolesType } from "../../Middlewares/auth.middleware.js";
+import sendEmail, { subject } from "../../utils/sendEmail.js";
+import { signUpHTML } from "../../utils/generateHTML.js";
 
 export const register = async (req, res) => {
     try {
@@ -30,6 +32,22 @@ export const register = async (req, res) => {
             phone : encryptPhone,
             role,
         });
+        
+        // create email verification token
+        const emailVerificationToken = jwt.sign({ email }, process.env.JWT_SECRET_EMAIL_VERIFICATION);
+        
+        // create email verification link
+        const emailVerificationLink = `http://localhost:3000/auth/activate_account/${emailVerificationToken}`;
+
+        const isSent = await sendEmail(
+            email, 
+            subject.verifyEmail, 
+            signUpHTML(emailVerificationLink, userName)
+        );
+
+        if (!isSent) {
+            return res.status(500).json({ success: false, message: "Error sending email" });
+        }
 
         res.status(201).json({ message: "User registered successfully", user });
 
@@ -46,6 +64,10 @@ export const login = async (req, res) => {
         const user = await userModel.findOne({ email });
         if (!user) {
             return res.status(404).json({ success: false, message: "User does not exist" });
+        }
+
+        if (user.confirmEmail === false) {
+            return res.status(401).json({ success: false, message: "Please verify your email" });
         }
 
         const match = Bcrypt.compareSync(password, user.password);
@@ -65,6 +87,26 @@ export const login = async (req, res) => {
         );
 
         res.status(201).json({ message: "DONE", token });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message, stack: error.stack });
+    }
+};
+
+export const activateAccount = async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        const { email } = jwt.verify(token, process.env.JWT_SECRET_EMAIL_VERIFICATION);
+
+        const user = await userModel.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User does not exist" });
+        }
+
+        user.confirmEmail = true;
+        await user.save();
+
+        return res.status(200).json({ message: "Account activated successfully" });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message, stack: error.stack });
     }
