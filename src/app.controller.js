@@ -17,8 +17,16 @@ const bootstrap = async (app, express) => {
     app.use("/message", messageController);
 
     // 404
-    app.all("*", (req, res) => {
-        res.status(404).json({ message: "Route not found" });
+    app.all("*", (req, res, next) => {
+        return next(new Error("Route not found", { cause: 404 }));
+    });
+
+    // global error handler
+    app.use((err, req, res, next) => {
+        const status = err.cause || 500;
+        return res
+            .status(status)
+            .json({ success: false, error: err.message, stack: err.stack });
     });
 
 }

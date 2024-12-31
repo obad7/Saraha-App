@@ -11,9 +11,7 @@ export const authentication = async (req, res, next) => {
     try {
         // get token from headers
         const { authorization } = req.headers;
-        if (!authorization) {
-            return res.status(401).json({ success: false, message: "Unauthorized : No token provided" });
-        }
+        if (!authorization) return next(new Error("Authorization token is required", { cause: 401 }));
         
         const [ Bearer, token] = authorization.split(" ");
         let TOKEN_SIGNITURE = undefined;
@@ -34,20 +32,16 @@ export const authentication = async (req, res, next) => {
         // const { id } = jwt.verify(token, TOKEN_SIGNITURE);
         // or ...
         const decoded = jwt.verify(token, TOKEN_SIGNITURE);
-        if (!decoded?.id) {
-            return res.status(401).json({ success: false, message: "Invalid payload" });
-        }
+        if (!decoded?.id) return next(new Error("Invalid token", { cause: 401 }));
 
         const user = await userModel.findById(decoded.id).select("-password");
-        if (!user) {
-            return res.status(404).json({ success: false, message: "User does not exist" });
-        }
+        if (!user) return next(new Error("User does not exist", { cause: 404 }));
         // attach user to the request object
         req.user = user;
 
         return next();
     } catch (error) {
-        return res.status(500).json({ success: false, error: error.message, stack: error.stack });
+        return next(error);
     }
 };
 
@@ -55,12 +49,11 @@ export const authentication = async (req, res, next) => {
 export const allowTo = (roles = []) => {
     return async (req, res, next) => {
         try {
-            if (!roles.includes(req.user.role)) {
-                return res.status(403).json({ success: false, message: "Forbidden Account" });
-            }
+            if (!roles.includes(req.user.role)) 
+                return next(new Error("You are not authorized to perform this action", { cause: 403 }));
             return next();
         } catch (error) {
-            return res.status(500).json({ success: false, error: error.message, stack: error.stack });
+            return next(error);
         }
     }
 }
