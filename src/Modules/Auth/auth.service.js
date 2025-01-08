@@ -3,8 +3,7 @@ import Bcrypt from "bcrypt";
 import CryptoJS from "crypto-js";
 import jwt from "jsonwebtoken";
 import { rolesType } from "../../Middlewares/auth.middleware.js";
-import sendEmail, { subject } from "../../utils/sendEmail.js";
-import { signUpHTML } from "../../utils/generateHTML.js";
+import { emailEmitter } from "../../utils/emailEvents.js";
 
 export const register = async (req, res, next) => {
     const { userName, email, password, confirmPassword, phone, role } = req.body;
@@ -28,19 +27,7 @@ export const register = async (req, res, next) => {
         role,
     });
 
-    // create email verification token
-    const emailVerificationToken = jwt.sign({ email }, process.env.JWT_SECRET_EMAIL_VERIFICATION);
-    
-    // create email verification link
-    const emailVerificationLink = `http://localhost:3000/auth/activate_account/${emailVerificationToken}`;
-
-    const isSent = await sendEmail(
-        email,
-        subject.verifyEmail,
-        signUpHTML(emailVerificationLink, userName)
-    );
-
-    if (!isSent) return next(new Error("Failed to send email", { cause: 500 }));
+    emailEmitter.emit("sendEmail", user.email, user.userName);
 
     res.status(201).json({ message: "User registered successfully", user });
 };
