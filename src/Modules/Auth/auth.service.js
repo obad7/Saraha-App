@@ -6,9 +6,7 @@ import { rolesType } from "../../Middlewares/auth.middleware.js";
 import { emailEmitter } from "../../utils/emailEvents.js";
 
 export const register = async (req, res, next) => {
-    const { userName, email, password, confirmPassword, phone, role } = req.body;
-
-    if (password !== confirmPassword) return next(new Error("Passwords do not match", { cause: 400 }));
+    const { email, password, phone } = req.body;
 
     const existingUser = await userModel.findOne({ email });
     if (existingUser) return next(new Error("User already exists", { cause: 400 }));
@@ -20,11 +18,9 @@ export const register = async (req, res, next) => {
     const encryptPhone = CryptoJS.AES.encrypt(phone, process.env.ENCRYPTION_KEY).toString();
 
     const user = await userModel.create({ 
-        userName,
-        email,
+        ...req.body,
         password : hashPassword,
         phone : encryptPhone,
-        role,
     });
 
     emailEmitter.emit("sendEmail", user.email, user.userName);
@@ -34,7 +30,7 @@ export const register = async (req, res, next) => {
 
 
 export const login = async (req, res, next) => {
-    const { email, password } = req.body;
+    const { email } = req.body;
     const user = await userModel.findOne({ email });
 
     if (!user) return next(new Error("User does not exist", { cause: 404 }));
