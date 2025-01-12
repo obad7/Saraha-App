@@ -2,6 +2,7 @@ import connectDB from "./DB/connection.js";
 import authController from "./Modules/Auth/auth.controller.js";
 import userController from "./Modules/User/user.controller.js";
 import messageController from "./Modules/Messages/message.controller.js";
+import globalErrorHandler from "./utils/error handling/globalErrorHandler.js";
 
 const bootstrap = async (app, express) => {
     connectDB();
@@ -22,12 +23,7 @@ const bootstrap = async (app, express) => {
     });
 
     // global error handler
-    app.use((err, req, res, next) => {
-        const status = err.cause || 500;
-        return res
-            .status(status)
-            .json({ success: false, error: err.message, stack: err.stack });
-    });
+    app.use(globalErrorHandler);
 
 }
 

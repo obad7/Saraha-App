@@ -1,5 +1,5 @@
 import userModel from "../DB/Models/user.model.js";
-import jwt from 'jsonwebtoken';
+import { verify } from "../utils/token/token.js";
 
 export const rolesType = {
     User : "User",
@@ -16,26 +16,23 @@ export const authentication = async (req, res, next) => {
         const [ Bearer, token] = authorization.split(" ");
         let TOKEN_SIGNITURE = undefined;
 
-        // validate token
         switch (Bearer) {
-            case "User":
+            case "Bearer":
                 TOKEN_SIGNITURE = process.env.JWT_SECRET_USER;
                 break;
             case "Admin":
                 TOKEN_SIGNITURE = process.env.JWT_SECRET_ADMIN;
                 break;
             default:
-                return res.status(401).json({ success: false, message: "Unauthorized : Invalid signiture" });
+                break;
         }
 
-        // distructuring just the {id} from token
-        // const { id } = jwt.verify(token, TOKEN_SIGNITURE);
-        // or ...
-        const decoded = jwt.verify(token, TOKEN_SIGNITURE);
+        const decoded = verify({ token: token, signature: TOKEN_SIGNITURE});
         if (!decoded?.id) return next(new Error("Invalid token", { cause: 401 }));
 
-        const user = await userModel.findById(decoded.id).select("-password");
+        const user = await userModel.findById(decoded.id);
         if (!user) return next(new Error("User does not exist", { cause: 404 }));
+
         // attach user to the request object
         req.user = user;
 
