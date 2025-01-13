@@ -25,7 +25,6 @@ export const sendMessage = async (req, res, next) => {
 export const getSingleMessage = async (req, res, next) => {
     const { messageId } = req.params
     const { user } =  req;
-    console.log(user)
     const message = await MessageModel.findById(messageId).populate([
         { path: "sender", select: "userName email -_id"},
         { path: "receiver", select: "userName email -_id"},

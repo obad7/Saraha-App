@@ -1,9 +1,15 @@
 import userModel from "../DB/Models/user.model.js";
 import { verify } from "../utils/token/token.js";
+import joi from 'joi';
 
 export const rolesType = {
     User : "User",
     Admin : "Admin"
+}
+
+export const genderType = {
+    male: "male",
+    female: "female"
 }
 
 // Auth Middleware
@@ -53,4 +59,20 @@ export const allowTo = (roles = []) => {
             return next(error);
         }
     }
+}
+
+
+export const generalFields = {
+    userName: joi.string().min(3).max(20),
+    email: joi.string().email(),
+    password: joi.string(),
+    confirmPassword: joi.string().valid(joi.ref("password")),
+    phone: joi.string(),
+    role: joi.string().valid(...Object.values(rolesType)),
+    gender: joi.string().valid(...Object.values(genderType)),
+    ///////////////////////////////////////
+    id : joi.custom(( value, helper ) => { 
+        if ( value > 20 ) return true;
+        return helper.message("Id must be less than 20");
+    })
 }

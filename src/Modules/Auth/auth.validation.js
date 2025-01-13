@@ -1,16 +1,18 @@
 import joi from 'joi';
-import { rolesType } from '../../Middlewares/auth.middleware.js';
+import { generalFields } from '../../Middlewares/auth.middleware.js';
 
-export const registerSchema = joi.object({
-    userName: joi.string().min(3).max(20).required(),
-    email: joi.string().email().required(),
-    password: joi.string().required(),
-    confirmPassword: joi.string().valid(joi.ref("password")).required(),
-    phone: joi.string(),
-    role: joi.string().valid(...Object.values(rolesType)),
-}).required();
+export const registerSchema = joi.object({ 
+    userName: generalFields.userName.required(),
+    email: generalFields.email.required(),
+    password: generalFields.password.required(),
+    confirmPassword: generalFields.confirmPassword.required(),
+    phone: generalFields.phone.required(),
+    role: generalFields.role,
+    gender: generalFields.gender,
+    id: generalFields.id,
+});
 
 export const loginSchema = joi.object({
-    email: joi.string().email().required(),
-    password: joi.string().required(),
+    email: generalFields.email.required(),
+    password: generalFields.password.required(),
 }).required();

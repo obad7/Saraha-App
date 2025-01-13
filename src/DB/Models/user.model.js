@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { rolesType } from "../../Middlewares/auth.middleware.js";
+import { genderType } from "../../Middlewares/auth.middleware.js";
 
 const userSchema = new Schema(
     {
@@ -29,10 +30,8 @@ const userSchema = new Schema(
 
         gender: {
             type: String,
-            enum: {
-                values: ["male", "female"],
-                message: "Gender must be either 'male' or 'female'"
-            }
+            enum: Object.values(genderType),
+            default: genderType.male
         },
 
         confirmEmail: {
