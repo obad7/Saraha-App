@@ -24,18 +24,18 @@ export const sendMessage = async (req, res, next) => {
 
 export const getSingleMessage = async (req, res, next) => {
     const { messageId } = req.params
-
-    const message = await MessageModel.findById(messageId);
-    if (!message) return next(new Error("Message does not exist", { cause: 404 }));
+    const { user } =  req;
+    console.log(user)
+    const message = await MessageModel.findById(messageId).populate([
+        { path: "sender", select: "userName email -_id"},
+        { path: "receiver", select: "userName email -_id"},
+    ]);
 
     if (
-        message.receiver.toString() == req.user._id.toString() ||
-        message.sender.toString() == req.user._id.toString()
+        message.receiver?.email === user.email ||
+        message.sender?.email === user.email
     )
-    return res.status(200).json({ 
-        success: true, 
-        result : message,
-    });
+    return res.status(200).json({ success: true, result : message });
 
     return next(new Error("Unauthorized", { cause: 403 }));
 }
