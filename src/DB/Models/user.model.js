@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { rolesType } from "../../Middlewares/auth.middleware.js";
-import { genderType } from "../../Middlewares/auth.middleware.js";
+import { genderType } from "../../Middlewares/validation.middleware.js";
 
 const userSchema = new Schema(
     {
@@ -44,12 +44,17 @@ const userSchema = new Schema(
             enum: Object.values(rolesType),
             default: rolesType.User
         },
+        
+        isDeleted: {
+            type: Boolean,
+            default: false
+        },
 
         DOB: String,
         address: String,
         phone: String,
         image: String,
-
+        changedAt: Date,
     },
 
 

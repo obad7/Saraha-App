@@ -43,6 +43,12 @@ export const login = async (req, res, next) => {
             : process.env.JWT_SECRET_ADMIN,
         options: { expiresIn: "1d" }
     });
+
+    if (user.isDeleted === true) {
+        user.isDeleted = false;
+        await user.save();
+    }
+
     res.status(200).json({ message: "DONE", token });
 };
 

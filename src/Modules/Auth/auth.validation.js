@@ -1,5 +1,5 @@
 import joi from 'joi';
-import { generalFields } from '../../Middlewares/auth.middleware.js';
+import { generalFields } from '../../Middlewares/validation.middleware.js';
 
 export const registerSchema = joi.object({ 
     userName: generalFields.userName.required(),
@@ -10,7 +10,7 @@ export const registerSchema = joi.object({
     role: generalFields.role,
     gender: generalFields.gender,
     id: generalFields.id,
-});
+}).required();
 
 export const loginSchema = joi.object({
     email: generalFields.email.required(),
